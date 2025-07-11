@@ -1,0 +1,382 @@
+-- 基本服務與玩家
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+-- GUI 主體
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "MaolingHub"
+
+-- 修正：主框架樣式
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 450, 0, 350)
+Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+
+-- 添加漸層效果
+local gradient = Instance.new("UIGradient", Frame)
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 35)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(35, 35, 50))
+}
+gradient.Rotation = 45
+
+-- 添加外發光效果
+local stroke = Instance.new("UIStroke", Frame)
+stroke.Color = Color3.fromRGB(100, 150, 255)
+stroke.Thickness = 2
+stroke.Transparency = 0.5
+
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 15)
+
+-- 修正：標題樣式
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, -80, 0, 50)
+Title.Position = UDim2.new(0, 15, 0, 0)  -- 往上移動5像素原為5
+Title.BackgroundTransparency = 1
+Title.Text = "✨ 貓玲的腳本區 ✨"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 22
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- 添加標題發光效果
+local titleStroke = Instance.new("UIStroke", Title)
+titleStroke.Color = Color3.fromRGB(100, 150, 255)
+titleStroke.Thickness = 1
+titleStroke.Transparency = 0.3
+
+-- 修正：關閉按鈕樣式和功能
+local Close = Instance.new("TextButton", Frame)
+Close.Size = UDim2.new(0, 35, 0, 35)
+Close.Position = UDim2.new(1, -40, 0, 8)
+Close.Text = "x"
+Close.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 18
+Close.BorderSizePixel = 0
+
+-- 添加關閉按鈕效果
+local closeGradient = Instance.new("UIGradient", Close)
+closeGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 60, 60)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 40, 40))
+}
+
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 8)
+
+-- 修正：關閉按鈕功能
+Close.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+    _G.maolingHubLoaded = false -- 重置載入狀態
+end)
+
+-- 修正：最小化按鈕樣式
+local Minimize = Instance.new("TextButton", Frame)
+Minimize.Size = UDim2.new(0, 35, 0, 35)
+Minimize.Position = UDim2.new(1, -80, 0, 8)
+Minimize.Text = "─"
+Minimize.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+Minimize.Font = Enum.Font.GothamBold
+Minimize.TextSize = 16
+Minimize.BorderSizePixel = 0
+
+local minimizeGradient = Instance.new("UIGradient", Minimize)
+minimizeGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 100, 120)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 100))
+}
+
+Instance.new("UICorner", Minimize).CornerRadius = UDim.new(0, 8)
+
+-- 修正：側邊欄為可滾動
+local SideBar = Instance.new("ScrollingFrame", Frame)
+SideBar.Size = UDim2.new(0, 130, 1, -55)
+SideBar.Position = UDim2.new(0, 5, 0, 50)
+SideBar.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+SideBar.BorderSizePixel = 0
+SideBar.ScrollBarThickness = 6
+SideBar.CanvasSize = UDim2.new(0, 0, 0, 200)
+SideBar.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SideBar.ScrollingDirection = Enum.ScrollingDirection.Y
+
+-- 添加側邊欄樣式
+local sidebarGradient = Instance.new("UIGradient", SideBar)
+sidebarGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 45, 65))
+}
+
+Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 10)
+
+-- 添加UIListLayout到側邊欄
+local sidebarLayout = Instance.new("UIListLayout", SideBar)
+sidebarLayout.Padding = UDim.new(0, 8)
+sidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- 修正：內容區域
+local Content = Instance.new("Frame", Frame)
+Content.Size = UDim2.new(1, -145, 1, -55)
+Content.Position = UDim2.new(0, 140, 0, 50)
+Content.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+Content.BorderSizePixel = 0
+
+local contentGradient = Instance.new("UIGradient", Content)
+contentGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 60)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 75))
+}
+
+Instance.new("UICorner", Content).CornerRadius = UDim.new(0, 10)
+
+-- 修正：縮小功能的尺寸
+local isMinimized = false
+local fullSize = UDim2.new(0, 450, 0, 350)
+local miniSize = UDim2.new(0, 450, 0, 50)
+
+Minimize.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    SideBar.Visible = not isMinimized
+    Content.Visible = not isMinimized
+    Frame.Size = isMinimized and miniSize or fullSize
+end)
+
+-- 修正：簡單高亮文字的分區按鈕樣式
+local function createSectionButton(text, order, parent)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(0, 120, 0, 45)
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(85, 85, 105)  -- 比原本更亮的背景
+    
+    -- 最亮的文字設定
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)  -- 純白色
+    btn.TextTransparency = 0  -- 完全不透明
+    btn.Font = Enum.Font.GothamBold  -- 粗體字
+    btn.TextSize = 16  -- 適中大小
+    btn.BorderSizePixel = 0
+    
+    -- 移除漸層，使用純色背景
+    -- 這樣文字會更清楚
+    
+    -- 添加圓角
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    
+    -- 簡化描邊
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Color = Color3.fromRGB(150, 180, 255)
+    btnStroke.Thickness = 1
+    btnStroke.Transparency = 0.6
+    
+    -- 簡單hover效果
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(105, 105, 125)  -- hover時更亮
+        btnStroke.Transparency = 0.3
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(85, 85, 105)
+        btnStroke.Transparency = 0.6
+    end)
+    
+    return btn
+end
+
+
+-- 修正：簡單高亮文字的一般按鈕樣式
+local function createButton(text, order, parent, spacing)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(0, 180, 0, 35)
+    btn.Position = UDim2.new(0.5, -90, 0, 10 + (order - 1) * spacing)
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(80, 140, 220)  -- 比原本更亮的背景
+    
+    -- 最亮的文字設定
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)  -- 純白色
+    btn.TextSize = 16  -- 適中大小
+    btn.Font = Enum.Font.GothamBold  -- 粗體字
+    btn.BorderSizePixel = 0
+    
+    -- 移除漸層，使用純色背景讓文字更清楚
+    
+    -- 添加圓角
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    
+    -- 簡化描邊
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Color = Color3.fromRGB(120, 170, 255)
+    btnStroke.Thickness = 1
+    btnStroke.Transparency = 0.6
+    
+    -- 簡單hover效果
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(100, 160, 240)  -- hover時更亮
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)  -- 保持純白
+        btnStroke.Transparency = 0.3
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(80, 140, 220)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)  -- 保持純白
+        btnStroke.Transparency = 0.6
+    end)
+    
+    return btn
+end
+
+
+-- 添加滾動框樣式改善
+local function styleScrollFrame(scrollFrame)
+    scrollFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    scrollFrame.BorderSizePixel = 0
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
+    
+    local scrollGradient = Instance.new("UIGradient", scrollFrame)
+    scrollGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 45, 65)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(55, 55, 80))
+    }
+    
+    Instance.new("UICorner", scrollFrame).CornerRadius = UDim.new(0, 8)
+end
+
+-- 新增：馬桶塞功能相關代碼
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+-- 馬桶塞手套獲取功能
+local function getPlungerGlove()
+    local success, err = pcall(function()
+        -- 檢查第一個目標是否存在
+        local bountyHunterRoom = Workspace:FindFirstChild("BountyHunterRoom")
+        if bountyHunterRoom then
+            local plungerMain = bountyHunterRoom:FindFirstChild("PlungerMain")
+            if plungerMain and plungerMain:FindFirstChild("ClickDetector") then
+                -- 觸發第一個點擊
+                fireclickdetector(plungerMain.ClickDetector)
+                wait(0.5)
+            end
+        end
+        
+        -- 檢查第二個目標是否存在
+        local plungers = Workspace:FindFirstChild("plungers")
+        if plungers then
+            local toiletPlunger = plungers:FindFirstChild("ToiletPlunger")
+            if toiletPlunger and toiletPlunger:FindFirstChild("ClickDetector") then
+                -- 觸發第二個點擊
+                fireclickdetector(toiletPlunger.ClickDetector)
+                
+                -- 設置標記以在新服務器中執行
+                _G.needPlungerGlove = true
+                
+                -- 等待傳送（通常點擊後會自動傳送）
+                wait(2)
+            end
+        end
+    end)
+    
+    if not success then
+        print("馬桶塞手套獲取失敗: " .. tostring(err))
+    end
+end
+
+-- 新服務器中的自動觸發功能
+local function autoTriggerPlungerGlove()
+    local attempts = 0
+    local maxAttempts = 50
+    
+    local function checkAndTrigger()
+        attempts = attempts + 1
+        
+        local plungerGlove = Workspace:FindFirstChild("plunger glove")
+        if plungerGlove and plungerGlove:FindFirstChild("ClickDetector") then
+            fireclickdetector(plungerGlove.ClickDetector)
+            print("成功觸發馬桶塞手套！")
+            _G.needPlungerGlove = false
+            return true
+        end
+        
+        if attempts >= maxAttempts then
+            print("達到最大嘗試次數，停止尋找馬桶塞手套")
+            _G.needPlungerGlove = false
+            return true
+        end
+        
+        return false
+    end
+    
+    -- 每秒檢查一次
+    local connection
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        if checkAndTrigger() then
+            connection:Disconnect()
+        end
+    end)
+end
+
+-- 如果標記存在，自動執行
+if _G.needPlungerGlove then
+    spawn(autoTriggerPlungerGlove)
+end
+
+-- 創建馬桶塞分區
+local plungerSection = createSectionButton("🚽 馬桶塞", 1, SideBar)
+
+-- 創建馬桶塞內容區域
+local plungerContent = Instance.new("ScrollingFrame", Content)
+plungerContent.Size = UDim2.new(1, 0, 1, 0)
+plungerContent.Position = UDim2.new(0, 0, 0, 0)
+plungerContent.BackgroundTransparency = 1
+plungerContent.BorderSizePixel = 0
+plungerContent.ScrollBarThickness = 6
+plungerContent.CanvasSize = UDim2.new(0, 0, 0, 200)
+plungerContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+plungerContent.ScrollingDirection = Enum.ScrollingDirection.Y
+plungerContent.Visible = false
+
+styleScrollFrame(plungerContent)
+
+-- 創建馬桶塞按鈕
+local plungerGloveBtn = createButton("自動獲取馬桶塞手套", 1, plungerContent, 50)
+
+-- 連接按鈕功能
+plungerGloveBtn.MouseButton1Click:Connect(function()
+    getPlungerGlove()
+end)
+
+-- 分區切換功能
+local currentSection = nil
+local sections = {
+    {button = plungerSection, content = plungerContent, name = "plunger"}
+}
+
+-- 切換到指定分區
+local function switchToSection(sectionName)
+    -- 隱藏所有內容
+    for _, section in pairs(sections) do
+        section.content.Visible = false
+        section.button.BackgroundColor3 = Color3.fromRGB(85, 85, 105)
+    end
+    
+    -- 顯示指定分區
+    for _, section in pairs(sections) do
+        if section.name == sectionName then
+            section.content.Visible = true
+            section.button.BackgroundColor3 = Color3.fromRGB(105, 105, 125)
+            currentSection = sectionName
+            break
+        end
+    end
+end
+
+-- 連接分區按鈕
+plungerSection.MouseButton1Click:Connect(function()
+    switchToSection("plunger")
+end)
+
+-- 預設顯示馬桶塞分區
+switchToSection("plunger")

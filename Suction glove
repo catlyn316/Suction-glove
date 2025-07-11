@@ -248,8 +248,8 @@ end
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 
--- 馬桶塞手套獲取功能
-local function getPlungerGlove()
+-- 第一步：進入重力跑酷（觸發前兩個點擊）
+local function enterGravityParkour()
     local success, err = pcall(function()
         -- 檢查第一個目標是否存在
         local bountyHunterRoom = Workspace:FindFirstChild("BountyHunterRoom")
@@ -258,8 +258,13 @@ local function getPlungerGlove()
             if plungerMain and plungerMain:FindFirstChild("ClickDetector") then
                 -- 觸發第一個點擊
                 fireclickdetector(plungerMain.ClickDetector)
+                print("觸發第一個點擊成功")
                 wait(0.5)
+            else
+                print("找不到 PlungerMain 或 ClickDetector")
             end
+        else
+            print("找不到 BountyHunterRoom")
         end
         
         -- 檢查第二個目標是否存在
@@ -269,62 +274,57 @@ local function getPlungerGlove()
             if toiletPlunger and toiletPlunger:FindFirstChild("ClickDetector") then
                 -- 觸發第二個點擊
                 fireclickdetector(toiletPlunger.ClickDetector)
-                
-                -- 設置標記以在新服務器中執行
-                _G.needPlungerGlove = true
+                print("觸發第二個點擊成功，正在傳送到新伺服器...")
                 
                 -- 等待傳送（通常點擊後會自動傳送）
                 wait(2)
+            else
+                print("找不到 ToiletPlunger 或 ClickDetector")
             end
+        else
+            print("找不到 plungers")
         end
     end)
     
     if not success then
-        print("馬桶塞手套獲取失敗: " .. tostring(err))
+        print("進入重力跑酷失敗: " .. tostring(err))
     end
 end
 
--- 新服務器中的自動觸發功能
-local function autoTriggerPlungerGlove()
-    local attempts = 0
-    local maxAttempts = 50
-    
-    local function checkAndTrigger()
-        attempts = attempts + 1
+-- 第二步：點擊獲取手套（在新伺服器中執行）
+local function clickGetGlove()
+    local success, err = pcall(function()
+        local attempts = 0
+        local maxAttempts = 50
+        local found = false
         
-        local plungerGlove = Workspace:FindFirstChild("plunger glove")
-        if plungerGlove and plungerGlove:FindFirstChild("ClickDetector") then
-            fireclickdetector(plungerGlove.ClickDetector)
-            print("成功觸發馬桶塞手套！")
-            _G.needPlungerGlove = false
-            return true
+        -- 持續尋找馬桶塞手套
+        while attempts < maxAttempts and not found do
+            attempts = attempts + 1
+            
+            local plungerGlove = Workspace:FindFirstChild("plunger glove")
+            if plungerGlove and plungerGlove:FindFirstChild("ClickDetector") then
+                fireclickdetector(plungerGlove.ClickDetector)
+                print("成功獲取馬桶塞手套！")
+                found = true
+                break
+            end
+            
+            wait(0.1)  -- 每0.1秒檢查一次
         end
         
-        if attempts >= maxAttempts then
-            print("達到最大嘗試次數，停止尋找馬桶塞手套")
-            _G.needPlungerGlove = false
-            return true
-        end
-        
-        return false
-    end
-    
-    -- 每秒檢查一次
-    local connection
-    connection = game:GetService("RunService").Heartbeat:Connect(function()
-        if checkAndTrigger() then
-            connection:Disconnect()
+        if not found then
+            print("在 " .. maxAttempts .. " 次嘗試後找不到馬桶塞手套")
         end
     end)
-end
-
--- 如果標記存在，自動執行
-if _G.needPlungerGlove then
-    spawn(autoTriggerPlungerGlove)
+    
+    if not success then
+        print("點擊獲取手套失敗: " .. tostring(err))
+    end
 end
 
 -- 創建馬桶塞分區
-local plungerSection = createSectionButton("🚽 馬桶塞", 1, SideBar)
+local plungerSection = createSectionButton("🪠馬桶塞", 1, SideBar)
 
 -- 創建馬桶塞內容區域
 local plungerContent = Instance.new("ScrollingFrame", Content)
@@ -340,12 +340,17 @@ plungerContent.Visible = false
 
 styleScrollFrame(plungerContent)
 
--- 創建馬桶塞按鈕
-local plungerGloveBtn = createButton("自動獲取馬桶塞手套", 1, plungerContent, 50)
+-- 創建兩個分開的按鈕
+local enterParkourBtn = createButton("進入重力跑酷", 1, plungerContent, 50)
+local getGloveBtn = createButton("點擊獲取手套", 2, plungerContent, 50)
 
 -- 連接按鈕功能
-plungerGloveBtn.MouseButton1Click:Connect(function()
-    getPlungerGlove()
+enterParkourBtn.MouseButton1Click:Connect(function()
+    enterGravityParkour()
+end)
+
+getGloveBtn.MouseButton1Click:Connect(function()
+    clickGetGlove()
 end)
 
 -- 分區切換功能

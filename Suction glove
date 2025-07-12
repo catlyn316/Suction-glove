@@ -324,7 +324,7 @@ local function clickGetGlove()
 end
 
 -- 創建馬桶塞分區
-local plungerSection = createSectionButton("🪠馬桶塞", 1, SideBar)
+local plungerSection = createSectionButton("🪠 吸盤", 1, SideBar)
 
 -- 創建馬桶塞內容區域
 local plungerContent = Instance.new("ScrollingFrame", Content)
